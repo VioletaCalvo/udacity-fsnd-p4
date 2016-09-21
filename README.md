@@ -188,7 +188,7 @@ application: your-google-app-id
 # run on localhost
 dev_appserver.py app.yaml
 
-# upload tp appengine
+# upload to appengine
 appcfg.py update app.yaml
   ```
 
