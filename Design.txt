@@ -1,0 +1,12 @@
+Hangman Game
+
+User can define the length of the word and the number of attempt errors.
+Default length of the word is 7 and default number of attemp errors is 5.
+
+I decided to use the Wordnik API to get a random word of a defined length.
+https://www.wordnik.com/
+
+User has to guess the word letter by letter. The letter history for a game is
+saved. If the user guess a letter twice, the game shows the related message and
+no attempts are discounted from attempts remaining. If the letter is in the
+target word, no attemps are dicounted from attempts remaining.
