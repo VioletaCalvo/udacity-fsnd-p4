@@ -187,12 +187,14 @@ class HangmanApi(remote.Service):
                       name='get_user_games',
                       http_method='GET')
     def get_user_games(self, request):
-        """ This returns all of a User's games. """
+        """ This returns all of a User's active games. """
         user = User.query(User.name == request.user_name).get()
         if not user:
             raise endpoints.NotFoundException(
                     'A User with that name does not exist!')
-        games = Game.query(Game.user == user.key)
+        games = Game.query(Game.user == user.key,
+                           Game.game_over == False,
+                           Game.cancelled == False)
         return GamesForm(items=[game.to_form() for game in games])
 
     @endpoints.method(request_message=GET_GAME_REQUEST,
