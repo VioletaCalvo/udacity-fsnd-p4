@@ -1,14 +1,10 @@
 # -*- coding: utf-8 -*-`
 """api.py - Create and configure the Hangman API, contains the game logic ."""
 
-
-import logging
 import endpoints
-import re
 from protorpc import remote, messages
 from google.appengine.api import memcache
 from google.appengine.api import taskqueue
-from google.appengine.ext import ndb
 
 from models import User, Game, Score
 from models import StringMessage, NewGameForm, GameForm, MakeMoveForm,\
