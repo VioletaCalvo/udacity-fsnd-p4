@@ -1,16 +1,73 @@
 Hangman Game
 
-User can define the length of the word and the number of attempt errors.
-Default length of the word is 7 and default number of attempt errors is 5.
+I decided to implement the simplest version of a game API because I have no much
+free time to do it because of my work. These are the decisions I had to made:
 
-I decided to use the Wordnik API to get a random word of a defined length.
-https://www.wordnik.com/
+- What game to implement?
+Hangman is simple and clear, I know the game. The only difficult thing was to
+find the target word but I was sure there was some API I could use to get it.
 
-User has to guess the word letter by letter. The letter history for a game is
-saved. If the user send a letter twice for the same game, the game shows the
-related message and no attempts are discounted from attempts remaining. If the
-letter is in the target word, no attempts are substracted from attempts
-remaining.
+- How to choose the target word?
+I found an API to get the target word!. With Wordnik API I can request for a
+a random word of a defined length. This API and his Python module is not well
+documented but is simple and with some testing I could finally use it.
 
-Send remainder email Cron job has been modified to send an email every day at
-16:00 only if the user has incompleted games.
+- User/client options for the game?
+It would be nice if the user (or the client app) could choose the number or
+errors allowed and length of the word, but scores depends on them, so
+I limited them and, set the default values.
+
+- IMPORTANT! Find all occurrences of the guessed letter in the target?
+Example:
+  game.target = 'example'
+  game.status_word = '*******'
+  guess = 'e' --> new game.status = '*e*****e'
+I search all indexes in game.target and replace these indexes in the
+game.status_word for the guess letter.
+After the first review I implemented the reviewer suggestions and allow user to
+guess the entire word I he wants.
+
+- Game Score?
+Since we only save the score for a won game, the game score must be related to
+the errors made and the length of the word.
+
+- How to show the result?
+As demanded in specifications, I need to add the game status to the
+result so user can see the game status, so I decided to return word status and
+error status.
+
+- How to show game history?
+This was easy. What I needed to show to the user was what he was guessed and the
+result status (word status and error status)
+
+- Cancel a game, delete it from DB?
+I decided to not to delete the game from the DB becaquestions I had to answer
+to implement this gameuse in the future we can use
+this information. Maybe a later version of the game allow the user to enable
+canceled games.
+
+- Additional properties to models:
+
+USERS:
+  We need to show the user ranking, so I added the 'score' Computed
+  Property that depends on wins and total_games. Then the additional properties
+  are:
+  * wins
+  * total_games
+  * score
+
+GAME:
+  Modified properties:
+  * target: now I save the target word (string, not integer)
+
+  Additional properties:
+  * cancelled: new feature for a game according to specifications
+  * status_word: to save the status word
+  * status_fails: to save the status of errors made by user
+  * moves: to save game history
+
+SCORE:
+  I decided to score depending on the length of the word and errors so I added this
+  properties to the Score model and I removed guesses property:
+  * errors
+  * length
