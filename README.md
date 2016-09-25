@@ -1,4 +1,4 @@
-# Hangman game API
+# P4: Hangman game API
 
 ## Game Description:
 Hangman is a game for one player. The player tries to guess a word by suggesting letters, within a certain number of guesses (length of the word plus error attempts is the maximum). Length of the word and error attempts can be defined by the client. Length of the word must be between 5 and 10. Error attempts also must be between 3 and 10
@@ -22,6 +22,14 @@ given time. Each game can be retrieved or played by using the path parameter
 Scores are saved when a game ends saving the number of errors and the length of the word
 
 User score and users ranking are calculated by the percentage of wins of total games (including cancelled games)
+
+## Basic testing of the API:
+
+1. Create a new user, using `create_user` endpoint.
+2. Use `create_game` endpoint to create a game. Be sure to copy the `urlsafe_key` for later use.
+3. Make moves with `make_move` endpoint. You will need to enter the `urlsafe_key` for the game.
+
+The list of available options is in the "Endpoints Included" section.
 
 ## Files Included:
  * api.py: Contains endpoints and game playing logic.
@@ -96,11 +104,11 @@ User score and users ranking are calculated by the percentage of wins of total g
     * Method: GET
     * Parameters: user_name
     * Returns: GamesForm
-    * Description: Returns all of a User's games.
+    * Description: Returns all of a User's active games (no game over or canceled).
 
  * **cancel_game** _(new)_ :star2:
     * Path: 'game/{urlsafe_game_key}/cancel'
-    * Method: POST
+    * Method: PUT
     * Parameters: urlsafe_game_key
     * Returns: GameForm
     * Description: This endpoint allows users to cancel a game in progress.
@@ -173,7 +181,10 @@ cd lib
 pip install -t lib wordnik
 ```
 
-Configure your wordnik API key in `game.py`
+Hangman API users [Wordnik API](http://developer.wordnik.com/), to get the target word for a game.
+> The Wordnik API lets you request definitions, example sentences, spelling suggestions, related words like synonyms and antonyms, phrases containing a given word, word autocompletion, random words, words of the day, and much more.
+
+Configure your Wordnik API key in `game.py`
 ```python
 WORDNIK_KEY = 'your-wordnik-api-key'
 ```
