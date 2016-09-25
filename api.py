@@ -86,44 +86,59 @@ class HangmanApi(remote.Service):
         game = get_by_urlsafe(request.urlsafe_game_key, Game)
         # manage game_over and cancelled games
         if game.game_over:
-            return game.to_form('Game already over!')
+            raise endpoints.ForbiddenException('Illegal action: Game is already over.')
         if game.cancelled:
-            return game.to_form('Game already cancelled!')
+            raise endpoints.ForbiddenException('Illegal action: Game already cancelled!.')
 
+        # guess to lowercase
         guess = request.guess.lower()
+
         # manage ilegal movements
-        if (len(guess) != 1) or (re.match('[a-z]', guess) is None):
-            return game.to_form('Guess must be one letter!')
-        if game.status_word.find(request.guess) > 0:
-            return game.to_form('Already played.')
-        if request.guess in game.status_fails:
-            return game.to_form('Already failed.')
+        if guess in game.status_fails:
+            raise endpoints.ForbiddenException('Illegal action: Already failed.')
+        if not guess.isalpha():
+            msg = 'Illegal action: Guess must only contain letters and at least one letter'
+            raise endpoints.ForbiddenException(msg)
+        if (len(guess) != 1) and (len(guess) != len(game.target)):
+            msg = 'Illegal action: Guess must contain one or {} letters.'.format(len(game.target))
+            raise endpoints.ForbiddenException(msg)
+        if game.status_word.find(guess) > 0:
+            raise endpoints.ForbiddenException('Illegal action: Already played.')
 
         # MAKE MOVE
-        indexes = [i for i, c in enumerate(game.target) if c == guess]
         end = False
-        # if char found in word
-        if len(indexes) > 0:
+        # manage guess word attempt:
+        if len(guess) > 1 and (guess == game.target):
+            game.status_word = game.target
+            end = True
             success = True
-            # calculate new status_word
+            msg = 'You win!, word is: -{0}-.'.format(game.status_word)
+        # if char is in target word:
+        elif game.target.find(guess) > -1:
+            success = True
             newStatus = game.status_word
+            # find all occurrences of guess in target word
+            indexes = [i for i, c in enumerate(game.target) if c == guess]
+            # calculate new status_word
+            # iterate result word (can be '*****') and replace required indexes
             for i in indexes:
+                # each iteration replace the index in word with guessed letters
                 newStatus = newStatus[:i] + newStatus[i:].replace('*', guess, 1)
             game.status_word = newStatus
             # check if user has won
             if newStatus.find('*') < 0:
                 end = True
-                game.end_game(True)
+                success = True
                 msg = 'You win!, word is: -{0}-.'.format(game.status_word)
             # otherwise return status_word
             else:
                 msg = 'Good, -{0}- is in word: -{1}-.'.format(guess, game.status_word)
-        # unless char found in word, manage attempt errors
+        # unless char found in word, or guess is target word
         else:
             success = False
             game.status_fails.append(request.guess)
             game.attempts_remaining -= 1
-            msg = 'Oh, oh, -{0}- not found.'.format(guess)
+            msg = 'Oh, oh, you failed.'
             # manage game over
             if game.attempts_remaining < 1:
                 end = True
